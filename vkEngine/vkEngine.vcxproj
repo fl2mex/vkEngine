@@ -143,11 +143,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\DebugMessenger.cpp" />
+    <ClCompile Include="src\Device.cpp" />
     <ClCompile Include="src\Engine.cpp" />
+    <ClCompile Include="src\Instance.cpp" />
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\DebugMessenger.h" />
+    <ClInclude Include="src\Device.h" />
     <ClInclude Include="src\Engine.h" />
+    <ClInclude Include="src\Instance.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
