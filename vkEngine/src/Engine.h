@@ -2,6 +2,9 @@
 #include <vulkan/vulkan.hpp> // Wish this was global...
 #include <GLFW/glfw3.h>
 
+#include "Swapchain.h"
+
+
 class Engine
 {
 public:
@@ -23,6 +26,11 @@ private:
 	vk::Device m_Device{nullptr};
 	vk::Queue m_GraphicsQueue{nullptr};
 	vk::Queue m_PresentQueue{nullptr};
+
+	vk::SwapchainKHR m_Swapchain{};
+	std::vector<vkEngine::SwapchainFrame> m_SwapchainFrames{};
+	vk::Format m_SwapchainFormat{};
+	vk::Extent2D m_SwapchainExtent{};
 
 	void Initialize();
 	// void MainLoop(); // TODO: Create Main Loop

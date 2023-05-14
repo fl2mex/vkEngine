@@ -1,7 +1,7 @@
 #include "Engine.h"
-#include "Device.h" // Device Abstraction
-#include "DebugMessenger.h" // Debug Messenger Abstraction
-#include "Instance.h" // Instance Abstraction
+#include "Device.h"
+#include "Logging.h"
+#include "Instance.h"
 
 #include <iostream>
 
@@ -14,7 +14,8 @@ Engine::Engine()
 	m_Instance = vkEngine::CreateInstance(debugMode, "Vulkan App"); // Create Window
 	
 	m_DLDI = vk::DispatchLoaderDynamic(m_Instance, vkGetInstanceProcAddr);
-	if (debugMode) m_DebugMessenger = vkEngine::CreateDebugMessenger(m_Instance, m_DLDI);
+	// TODO: Fix this
+	//if (debugMode) m_DebugMessenger = vkEngine::CreateDebugMessenger(m_Instance, m_DLDI);
 
 	VkSurfaceKHR surface;
 
@@ -33,13 +34,25 @@ Engine::Engine()
 	std::array<vk::Queue, 2> queues = vkEngine::GetQueue(m_PhysicalDevice, m_Device, m_Surface, debugMode);
 	m_GraphicsQueue = queues[0];
 	m_PresentQueue = queues[1];
+	vkEngine::SwapchainBundle bundle = vkEngine::CreateSwapchain(m_Device, m_PhysicalDevice,
+		m_Surface, screenWidth, screenHeight, debugMode);
+	m_Swapchain = bundle.swapchain;
+	m_SwapchainFrames = bundle.frames;
+	m_SwapchainFormat = bundle.format;
+	m_SwapchainExtent = bundle.extent;
+
+	//vkEngine::QuerySwapSupport(m_PhysicalDevice, m_Surface, debugMode);
 }
 
 Engine::~Engine()
 {
-	std::cout << "\nExitting Program...\n";
-	if (debugMode) m_Instance.destroyDebugUtilsMessengerEXT(m_DebugMessenger, nullptr, m_DLDI);
+	std::cout << "Exitting Program...\n";
+
+	for (vkEngine::SwapchainFrame frame : m_SwapchainFrames)
+		m_Device.destroyImageView(frame.imageView);
+	m_Device.destroySwapchainKHR(m_Swapchain);
 	m_Device.destroy();
+	if (debugMode) m_Instance.destroyDebugUtilsMessengerEXT(m_DebugMessenger, nullptr, m_DLDI);
 	m_Instance.destroySurfaceKHR(m_Surface);
 	m_Instance.destroy();
 	glfwTerminate();
@@ -52,8 +65,8 @@ void Engine::Initialize()
 		std::cout << "Failed to initialize GLFW\n";
 		return;
 	}
-	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); // These will be changed later
+	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); // This will be changed later
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 	m_Window = glfwCreateWindow(screenWidth, screenHeight, "Vulkan App", nullptr, nullptr);
 	if (m_Window)
 	{

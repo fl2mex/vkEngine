@@ -10,4 +10,12 @@ namespace vkEngine
 
 	vk::DebugUtilsMessengerEXT CreateDebugMessenger(vk::Instance& instance,
 		vk::DispatchLoaderDynamic& dldi);
+
+	void LogDeviceProperties(vk::PhysicalDevice& device);
+
+	std::vector<std::string> LogTransformBits(vk::SurfaceTransformFlagsKHR bits);
+	std::vector<std::string> LogAlphaCompositeBits(vk::CompositeAlphaFlagsKHR bits);
+	std::vector<std::string> LogImageUsageBits(vk::ImageUsageFlags bits);
+
+	std::string LogPresentMode(vk::PresentModeKHR mode);
 }

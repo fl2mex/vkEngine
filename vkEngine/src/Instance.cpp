@@ -14,6 +14,7 @@ namespace vkEngine
 			std::cout << "Device can support the following extensions:\n";
 			for (vk::ExtensionProperties supportedExtension : supportedExtensions)
 				std::cout << '\t' << supportedExtension.extensionName << "\n";
+			std::cout << "\n";
 		}
 
 		bool found;
@@ -30,10 +31,11 @@ namespace vkEngine
 			}
 			if (!found)
 			{
-				if (debug) std::cout << "Extension \"" << extension << "\" is not supported!\n";
+				if (debug) std::cout << "Extension \"" << extension << "\" is not supported!\n\n";
 				return false;
 			}
 		}
+		std::cout << "\n";
 
 		std::vector<vk::LayerProperties> supportedLayers = vk::enumerateInstanceLayerProperties();
 		if (debug)
@@ -41,6 +43,7 @@ namespace vkEngine
 			std::cout << "Device can support the following layers:\n";
 			for (vk::LayerProperties supportedLayer : supportedLayers)
 				std::cout << '\t' << supportedLayer.layerName << "\n";
+			std::cout << "\n";
 		}
 
 		for (const char* layer : layers) // Loop then check whether the layer is supported
@@ -56,10 +59,11 @@ namespace vkEngine
 			}
 			if (!found)
 			{
-				if (debug) std::cout << "Layer \"" << layer << "\" is not supported!\n";
+				if (debug) std::cout << "Layer \"" << layer << "\" is not supported!\n\n";
 				return false;
 			}
 		}
+		std::cout << "\n";
 		return true;
 	}
 
@@ -71,7 +75,7 @@ namespace vkEngine
 		if (debug)
 			std::cout << "Vulkan Variant: " <<
 			VK_API_VERSION_VARIANT(version) << "\nVersion: " << VK_API_VERSION_MAJOR(version) <<
-			"." << VK_API_VERSION_MINOR(version) << "." << VK_API_VERSION_PATCH(version) << "\n";
+			"." << VK_API_VERSION_MINOR(version) << "." << VK_API_VERSION_PATCH(version) << "\n\n";
 
 		version &= ~(0xFFFU);
 		version = VK_MAKE_API_VERSION(0, 1, 0, 0);
@@ -92,6 +96,7 @@ namespace vkEngine
 			std::cout << "Extensions requested:\n";
 			for (const char* extensionName : extensions) // Loop then print extension names
 				std::cout << "\t\"" << extensionName << "\"\n";
+			std::cout << "\n";
 		}
 
 		if (!isSupported(extensions, layers, debug)) return nullptr;
@@ -103,7 +108,7 @@ namespace vkEngine
 		try
 		{
 			vk::Instance instance = vk::createInstance(createInfo);
-			if (debug) std::cout << "Created Vulkan Instance\n";
+			if (debug) std::cout << "Created Vulkan Instance\n\n";
 			return instance;
 		}
 		catch (vk::SystemError err)

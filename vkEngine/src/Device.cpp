@@ -1,4 +1,5 @@
 #include "Device.h"
+#include "Logging.h"
 
 #include <iostream>
 #include <string>
@@ -17,6 +18,7 @@ namespace vkEngine
 			if (debug) std::cout << "\t\"" << extension.extensionName << "\"\n";
 			requiredExtensions.erase(extension.extensionName);
 		}
+		std::cout << "\n";
 		return requiredExtensions.empty();
 	}
 
@@ -29,13 +31,14 @@ namespace vkEngine
 			std::cout << "Checking if device is suitable\nRequesting device extensions:\n";
 			for (const char* extension : requestedExtensions)
 				std::cout << "\t\"" << extension << "\"\n";
+			std::cout << "\n";
 		}
 
 		if (bool extensionsSupported = checkDeviceExtensionSupport(device, requestedExtensions, debug))
-			if (debug) std::cout << "Device can support the requested extensions\n";
+			if (debug) std::cout << "Device can support the requested extensions\n\n";
 			else
 			{
-				if (debug) std::cout << "Device can't support the requested extensions\n";
+				if (debug) std::cout << "Device can't support the requested extensions\n\n";
 				return false;
 			}
 		return true;
@@ -49,28 +52,7 @@ namespace vkEngine
 
 		for (vk::PhysicalDevice device : availableDevices)
 		{
-			if (debug)
-			{
-				vk::PhysicalDeviceProperties properties = device.getProperties();
-				std::cout << "Device name: " << properties.deviceName << "\nDevice type: ";
-				switch (properties.deviceType)
-				{
-				case (vk::PhysicalDeviceType::eCpu):
-					std::cout << "CPU\n";
-					break;
-				case (vk::PhysicalDeviceType::eDiscreteGpu):
-					std::cout << "Discrete GPU\n";
-					break;
-				case (vk::PhysicalDeviceType::eIntegratedGpu):
-					std::cout << "Integrated GPU\n";
-					break;
-				case (vk::PhysicalDeviceType::eVirtualGpu):
-					std::cout << "Virtual GPU\n";
-					break;
-				default:
-					std::cout << "Other\n";
-				}
-			}
+			if (debug) LogDeviceProperties(device);
 			if (isSuitable(device, debug)) return device;
 		}
 		return nullptr;
@@ -80,6 +62,7 @@ namespace vkEngine
 		vk::SurfaceKHR surface, bool debug)
 	{
 		QueueFamilyIndices indices;
+		// TODO: Figure out why this is not working.
 		// device.getQueueFamilyProperties() does not run when debug is turned off. Must figure out.
 		std::vector<vk::QueueFamilyProperties> queueFamilies = device.getQueueFamilyProperties();
 
@@ -107,7 +90,8 @@ namespace vkEngine
 		return indices;
 	}
 
-	vk::Device vkEngine::CreateLogicalDevice(vk::PhysicalDevice physicalDevice, vk::SurfaceKHR surface, bool debug)
+	vk::Device vkEngine::CreateLogicalDevice(vk::PhysicalDevice physicalDevice, vk::SurfaceKHR surface,
+		bool debug)
 	{
 		QueueFamilyIndices indices = FindQueueFamilies(physicalDevice, surface, debug);
 		std::vector<uint32_t> uniqueIndices;
@@ -123,14 +107,15 @@ namespace vkEngine
 				queueFamilyIndex, 1, &queuePriority));
 		}
 
+		std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 		vk::PhysicalDeviceFeatures deviceFeatures = vk::PhysicalDeviceFeatures();
-
 		std::vector<const char*> enabledLayers;
 		if (debug) enabledLayers.push_back("VK_LAYER_KHRONOS_validation");
 
 		vk::DeviceCreateInfo createInfo = vk::DeviceCreateInfo(vk::DeviceCreateFlags(), 
 			queueCreateInfo.size(), queueCreateInfo.data(),
-			enabledLayers.size(), enabledLayers.data(), 0, nullptr, &deviceFeatures);
+			enabledLayers.size(), enabledLayers.data(),
+			deviceExtensions.size(), deviceExtensions.data(), &deviceFeatures);
 
 		try
 		{
@@ -150,11 +135,14 @@ namespace vkEngine
 	}
 
 	 std::array<vk::Queue, 2> vkEngine::GetQueue(vk::PhysicalDevice physicalDevice, vk::Device device,
-		vk::SurfaceKHR surface, bool debug) {
-
+		vk::SurfaceKHR surface, bool debug)
+	 {
 		QueueFamilyIndices indices = FindQueueFamilies(physicalDevice, surface, debug);
 
-		return { device.getQueue(indices.graphicsFamily.value(), 0),
-			device.getQueue(indices.presentFamily.value(), 0) };
+		return
+		{
+			device.getQueue(indices.graphicsFamily.value(), 0),
+			device.getQueue(indices.presentFamily.value(), 0)
+		};
 	}
 }
