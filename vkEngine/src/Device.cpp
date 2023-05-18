@@ -87,6 +87,7 @@ namespace vkEngine
 			if (indices.isComplete()) break;
 			i++;
 		}
+		std::cout << "\n";
 		return indices;
 	}
 

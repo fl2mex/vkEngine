@@ -1,8 +1,10 @@
-#include "Engine.h"
+#include "App.h"
 
 int main()
 {
-	Engine* engine = new Engine();
-	delete engine;
+	App* app = new App(1600, 900, true);
+	app->Run();
+
+	delete app;
 	return 0;
 }

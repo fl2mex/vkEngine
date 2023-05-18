@@ -77,6 +77,8 @@ namespace vkEngine
 		{
 			if (mode == vk::PresentModeKHR::eMailbox)
 				return mode;
+			if (mode == vk::PresentModeKHR::eImmediate)
+				return mode;
 		}
 		return vk::PresentModeKHR::eFifo;
 	}

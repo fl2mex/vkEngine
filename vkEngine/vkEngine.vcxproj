@@ -143,19 +143,38 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\App.cpp" />
+    <ClCompile Include="src\Commands.cpp" />
+    <ClCompile Include="src\FrameBuffer.cpp" />
     <ClCompile Include="src\Logging.cpp" />
     <ClCompile Include="src\Device.cpp" />
     <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\Instance.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Pipeline.cpp" />
+    <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\Swapchain.cpp" />
+    <ClCompile Include="src\Synchronisation.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\App.h" />
+    <ClInclude Include="src\Commands.h" />
+    <ClInclude Include="src\FrameBuffer.h" />
     <ClInclude Include="src\Logging.h" />
     <ClInclude Include="src\Device.h" />
     <ClInclude Include="src\Engine.h" />
     <ClInclude Include="src\Instance.h" />
+    <ClInclude Include="src\Pipeline.h" />
+    <ClInclude Include="src\Shader.h" />
     <ClInclude Include="src\Swapchain.h" />
+    <ClInclude Include="src\Synchronisation.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\shader\compiled\frag.spv" />
+    <None Include="res\shader\compiled\vert.spv" />
+    <None Include="res\shader\glsl\compile.bat" />
+    <None Include="res\shader\glsl\fragment.frag" />
+    <None Include="res\shader\glsl\vertex.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

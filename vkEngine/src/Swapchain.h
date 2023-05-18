@@ -14,6 +14,8 @@ namespace vkEngine
 	{
 		vk::Image image;
 		vk::ImageView imageView;
+		vk::Framebuffer framebuffer;
+		vk::CommandBuffer commandBuffer;
 	};
 	struct SwapchainBundle
 	{

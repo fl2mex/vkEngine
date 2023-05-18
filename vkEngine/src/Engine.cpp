@@ -2,18 +2,26 @@
 #include "Device.h"
 #include "Logging.h"
 #include "Instance.h"
+#include "Pipeline.h"
+#include "FrameBuffer.h"
+#include "Commands.h"
+#include "Synchronisation.h"
 
 #include <iostream>
 
-Engine::Engine()
+Engine::Engine(int width, int height, GLFWwindow* window, bool debug)
 {
-	if (debugMode) std::cout << "Debug Mode Enabled\n";
+	screenWidth = width;
+	screenHeight = height;
+	m_Window = window;
+	debugMode = debug;
 
-	Initialize();
+	if (debugMode) std::cout << "Debug Mode Enabled\n";
 
 	m_Instance = vkEngine::CreateInstance(debugMode, "Vulkan App"); // Create Window
 	
 	m_DLDI = vk::DispatchLoaderDynamic(m_Instance, vkGetInstanceProcAddr);
+
 	// TODO: Fix this
 	//if (debugMode) m_DebugMessenger = vkEngine::CreateDebugMessenger(m_Instance, m_DLDI);
 
@@ -41,42 +49,141 @@ Engine::Engine()
 	m_SwapchainFormat = bundle.format;
 	m_SwapchainExtent = bundle.extent;
 
-	//vkEngine::QuerySwapSupport(m_PhysicalDevice, m_Surface, debugMode);
+	vkEngine::GraphicsPipelineIn specs{};
+	specs.device = m_Device;
+	specs.vertexFilePath = "res/shader/compiled/vert.spv";
+	specs.fragmentFilePath = "res/shader/compiled/frag.spv";
+	specs.swapchainExtent = m_SwapchainExtent;
+	specs.swapchainImageFormat = m_SwapchainFormat;
+	vkEngine::GraphicsPipelineOut output = vkEngine::CreateGraphicsPipeline(specs, debugMode);
+
+	m_Layout = output.layout;
+	m_RenderPass = output.renderPass;
+	m_Pipeline = output.pipeline;
+
+	vkEngine::FrameBufferInput frameBufferInput;
+	frameBufferInput.device = m_Device;
+	frameBufferInput.renderPass = m_RenderPass;
+	frameBufferInput.swapchainExtent = m_SwapchainExtent;
+	vkEngine::CreateFrameBuffers(frameBufferInput, m_SwapchainFrames, debugMode);
+
+	m_CommandPool = vkEngine::CreateCommandPool(m_Device, m_PhysicalDevice, m_Surface, debugMode);
+
+	vkEngine::CommandBufferInputChunk commandBufferInput = { m_Device, m_CommandPool, m_SwapchainFrames };
+	m_CommandBuffer = vkEngine::CreateCommandBuffers(commandBufferInput, debugMode);
+
+	m_InFlightFence = vkEngine::CreateFence(m_Device, debugMode);
+	m_ImageAvailable = vkEngine::CreateSemaphore(m_Device, debugMode);
+	m_RenderFinished = vkEngine::CreateSemaphore(m_Device, debugMode);
 }
 
 Engine::~Engine()
 {
+	m_Device.waitIdle();
+
 	std::cout << "Exitting Program...\n";
 
+	m_Device.destroyFence(m_InFlightFence);
+	m_Device.destroySemaphore(m_ImageAvailable);
+	m_Device.destroySemaphore(m_RenderFinished);
+
+	m_Device.destroyCommandPool(m_CommandPool);
+
+	m_Device.destroyPipeline(m_Pipeline);
+	m_Device.destroyPipelineLayout(m_Layout);
+	m_Device.destroyRenderPass(m_RenderPass);
+
 	for (vkEngine::SwapchainFrame frame : m_SwapchainFrames)
+	{
 		m_Device.destroyImageView(frame.imageView);
+		m_Device.destroyFramebuffer(frame.framebuffer);
+	}
+
 	m_Device.destroySwapchainKHR(m_Swapchain);
 	m_Device.destroy();
+
 	if (debugMode) m_Instance.destroyDebugUtilsMessengerEXT(m_DebugMessenger, nullptr, m_DLDI);
 	m_Instance.destroySurfaceKHR(m_Surface);
 	m_Instance.destroy();
 	glfwTerminate();
 }
 
-void Engine::Initialize()
+void Engine::Render()
 {
-	if (!glfwInit())
+	m_Device.waitForFences(1, &m_InFlightFence, VK_TRUE, UINT64_MAX);
+	m_Device.resetFences(1, &m_InFlightFence);
+
+	uint32_t imageIndex{ m_Device.acquireNextImageKHR(m_Swapchain, UINT64_MAX, m_ImageAvailable, nullptr).value };
+
+	vk::CommandBuffer commandBuffer = m_SwapchainFrames[imageIndex].commandBuffer;
+	commandBuffer.reset();
+
+	vk::CommandBufferBeginInfo beginInfo = {};
+
+	try
 	{
-		std::cout << "Failed to initialize GLFW\n";
-		return;
+		commandBuffer.begin(beginInfo);
 	}
-	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); // This will be changed later
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-	m_Window = glfwCreateWindow(screenWidth, screenHeight, "Vulkan App", nullptr, nullptr);
-	if (m_Window)
+	catch (vk::SystemError err)
 	{
-		std::cout << "Created a GLFW Window called \"Vulkan App\""
-			"\nResolution is " << screenWidth << "x" << screenHeight << "\n";
-		return;
+		if (debugMode) std::cout << "Failed to begin recording Command Buffer" << err.what() << "\n";
 	}
-	else if (debugMode)
+
+	vk::RenderPassBeginInfo renderPassInfo = {};
+	renderPassInfo.renderPass = m_RenderPass;
+	renderPassInfo.framebuffer = m_SwapchainFrames[imageIndex].framebuffer;
+	renderPassInfo.renderArea.offset.x = 0;
+	renderPassInfo.renderArea.offset.y = 0;
+	renderPassInfo.renderArea.extent = m_SwapchainExtent;
+
+	vk::ClearValue clearColor = { std::array<float, 4>{1.0f, 0.5f, 0.25f, 1.0f} };
+	renderPassInfo.clearValueCount = 1;
+	renderPassInfo.pClearValues = &clearColor;
+
+	commandBuffer.beginRenderPass(&renderPassInfo, vk::SubpassContents::eInline);
+	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_Pipeline);
+	commandBuffer.draw(3, 1, 0, 0);
+	commandBuffer.endRenderPass();
+
+	try
 	{
-		std::cout << "Failed to create a GLFW Window\n";
-		return;
+		commandBuffer.end();
 	}
+	catch (vk::SystemError err)
+	{
+		if (debugMode) std::cout << "Failed to record Command Buffer\n" << err.what() << "\n";
+	}
+
+	vk::SubmitInfo submitInfo = {};
+	vk::Semaphore waitSemaphores[] = { m_ImageAvailable };
+	vk::PipelineStageFlags waitStages[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
+	submitInfo.waitSemaphoreCount = 1;
+	submitInfo.pWaitSemaphores = waitSemaphores;
+	submitInfo.pWaitDstStageMask = waitStages;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &commandBuffer;
+
+	vk::Semaphore signalSemaphores[] = { m_RenderFinished };
+	submitInfo.signalSemaphoreCount = 1;
+	submitInfo.pSignalSemaphores = signalSemaphores;
+
+	try
+	{
+		m_GraphicsQueue.submit(submitInfo, m_InFlightFence);
+	}
+	catch (vk::SystemError err)
+	{
+		if (debugMode) std::cout << "Failed to submit Draw Command Buffer\n" << err.what() << "\n";
+	}
+
+	vk::PresentInfoKHR presentInfo = {};
+	presentInfo.waitSemaphoreCount = 1;
+	presentInfo.pWaitSemaphores = signalSemaphores;
+
+	vk::SwapchainKHR swapChains[] = { m_Swapchain };
+	presentInfo.swapchainCount = 1;
+	presentInfo.pSwapchains = swapChains;
+	presentInfo.pImageIndices = &imageIndex;
+
+	m_PresentQueue.presentKHR(presentInfo);
 }

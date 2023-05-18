@@ -8,14 +8,16 @@
 class Engine
 {
 public:
-	Engine(); // Constructor, no need to call a function
+	Engine(int width, int height, GLFWwindow* window, bool debug); // Constructor, no need to call a function
 	~Engine(); // Destructor runs automatically when main loop ends
-private:
-	bool debugMode = true;
 
-	uint32_t screenWidth = 1600;
-	uint32_t screenHeight = 900;
-	GLFWwindow* m_Window{nullptr};
+	void Render();
+
+private:
+	bool debugMode;
+	uint32_t screenWidth;
+	uint32_t screenHeight;
+	GLFWwindow* m_Window;
 
 	vk::Instance m_Instance{nullptr};
 	vk::DebugUtilsMessengerEXT m_DebugMessenger{nullptr};
@@ -24,14 +26,20 @@ private:
 
 	vk::PhysicalDevice m_PhysicalDevice{nullptr};
 	vk::Device m_Device{nullptr};
-	vk::Queue m_GraphicsQueue{nullptr};
-	vk::Queue m_PresentQueue{nullptr};
+	vk::Queue m_GraphicsQueue{nullptr}, m_PresentQueue{nullptr};
 
 	vk::SwapchainKHR m_Swapchain{};
 	std::vector<vkEngine::SwapchainFrame> m_SwapchainFrames{};
 	vk::Format m_SwapchainFormat{};
 	vk::Extent2D m_SwapchainExtent{};
 
-	void Initialize();
-	// void MainLoop(); // TODO: Create Main Loop
+	vk::PipelineLayout m_Layout;
+	vk::RenderPass m_RenderPass;
+	vk::Pipeline m_Pipeline;
+
+	vk::CommandPool m_CommandPool;
+	vk::CommandBuffer m_CommandBuffer;
+
+	vk::Fence m_InFlightFence;
+	vk::Semaphore m_ImageAvailable, m_RenderFinished;
 };
