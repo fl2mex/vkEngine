@@ -6,9 +6,10 @@
 
 namespace vkEngine
 {
-	bool isSupported(std::vector<const char*>& extensions, std::vector<const char*>& layers, bool debug)
+	bool IsSupported(std::vector<const char*>& extensions, std::vector<const char*>& layers,
+	                 const bool debug)
 	{
-		std::vector<vk::ExtensionProperties> supportedExtensions = vk::enumerateInstanceExtensionProperties();
+		const std::vector<vk::ExtensionProperties> supportedExtensions = vk::enumerateInstanceExtensionProperties();
 		if (debug)
 		{
 			std::cout << "Device can support the following extensions:\n";
@@ -37,7 +38,7 @@ namespace vkEngine
 		}
 		std::cout << "\n";
 
-		std::vector<vk::LayerProperties> supportedLayers = vk::enumerateInstanceLayerProperties();
+		const std::vector<vk::LayerProperties> supportedLayers = vk::enumerateInstanceLayerProperties();
 		if (debug)
 		{
 			std::cout << "Device can support the following layers:\n";
@@ -70,25 +71,24 @@ namespace vkEngine
 	vk::Instance CreateInstance(bool debug, const char* applicationName)
 	{
 		if (debug) std::cout << "\nCreating Vulkan Instance\n";
-		uint32_t version{ 0 };
+		uint32_t version{0};
 		vkEnumerateInstanceVersion(&version);
 		if (debug)
 			std::cout << "Vulkan Variant: " <<
-			VK_API_VERSION_VARIANT(version) << "\nVersion: " << VK_API_VERSION_MAJOR(version) <<
-			"." << VK_API_VERSION_MINOR(version) << "." << VK_API_VERSION_PATCH(version) << "\n\n";
+				VK_API_VERSION_VARIANT(version) << "\nVersion: " << VK_API_VERSION_MAJOR(version) <<
+				"." << VK_API_VERSION_MINOR(version) << "." << VK_API_VERSION_PATCH(version) << "\n\n";
 
 		version &= ~(0xFFFU);
 		version = VK_MAKE_API_VERSION(0, 1, 0, 0);
 
-		vk::ApplicationInfo appInfo(applicationName, version, "No Engine", version, version);
+		const vk::ApplicationInfo appInfo(applicationName, version, "No Engine", version, version);
 
 		uint32_t glfwExtensionCount = 0;
-		const char** glfwExtensions;
-		glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+		const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
-		std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+		std::vector extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 		std::vector<const char*> layers;
-		
+
 		if (debug)
 		{
 			extensions.push_back("VK_EXT_debug_utils"); // Needed for DebugUtilsMessengerEXT
@@ -99,19 +99,19 @@ namespace vkEngine
 			std::cout << "\n";
 		}
 
-		if (!isSupported(extensions, layers, debug)) return nullptr;
+		if (!IsSupported(extensions, layers, debug)) return nullptr;
 
-		vk::InstanceCreateInfo createInfo = vk::InstanceCreateInfo(vk::InstanceCreateFlags(), &appInfo,
-			static_cast<uint32_t>(layers.size()), layers.data(),
-			static_cast<uint32_t>(extensions.size()), extensions.data());
+		const vk::InstanceCreateInfo createInfo = vk::InstanceCreateInfo(vk::InstanceCreateFlags(), &appInfo,
+		                                                                 layers.size(), layers.data(),
+		                                                                 extensions.size(), extensions.data());
 
 		try
 		{
-			vk::Instance instance = vk::createInstance(createInfo);
+			const vk::Instance instance = vk::createInstance(createInfo);
 			if (debug) std::cout << "Created Vulkan Instance\n\n";
 			return instance;
 		}
-		catch (vk::SystemError err)
+		catch (vk::SystemError& err)
 		{
 			// err.what() is the best naming scheme i've ever come across
 			std::cout << "Failed to create Vulkan Instance\n" << err.what() << "\n";

@@ -10,6 +10,7 @@ namespace vkEngine
 		std::vector<vk::SurfaceFormatKHR> formats;
 		std::vector<vk::PresentModeKHR> presentModes;
 	};
+
 	struct SwapchainFrame
 	{
 		vk::Image image;
@@ -17,6 +18,7 @@ namespace vkEngine
 		vk::Framebuffer framebuffer;
 		vk::CommandBuffer commandBuffer;
 	};
+
 	struct SwapchainBundle
 	{
 		vk::SwapchainKHR swapchain;
@@ -30,5 +32,5 @@ namespace vkEngine
 	vk::PresentModeKHR ChooseSwapPresentMode(std::vector<vk::PresentModeKHR> modes);
 	vk::Extent2D ChooseSwapExtent(uint32_t width, uint32_t height, vk::SurfaceCapabilitiesKHR capabilities);
 	SwapchainBundle CreateSwapchain(vk::Device logicalDevice, vk::PhysicalDevice physicalDevice,
-		vk::SurfaceKHR surface, uint32_t width, uint32_t height, bool debug);
+	                                vk::SurfaceKHR surface, uint32_t width, uint32_t height, bool debug);
 }

@@ -5,10 +5,10 @@
 
 namespace vkEngine
 {
-	vk::CommandPool vkEngine::CreateCommandPool(vk::Device device, vk::PhysicalDevice physicalDevice,
-		vk::SurfaceKHR surface, bool debug)
+	vk::CommandPool vkEngine::CreateCommandPool(const vk::Device device, const vk::PhysicalDevice physicalDevice,
+	                                            const vk::SurfaceKHR surface, const bool debug)
 	{
-		vkEngine::QueueFamilyIndices queueFamilyIndices = vkEngine::FindQueueFamilies(physicalDevice, surface, debug);
+		const QueueFamilyIndices queueFamilyIndices = FindQueueFamilies(physicalDevice, surface, debug);
 		vk::CommandPoolCreateInfo createInfo{};
 		createInfo.flags = vk::CommandPoolCreateFlags() | vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
 		createInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
@@ -16,14 +16,14 @@ namespace vkEngine
 		{
 			return device.createCommandPool(createInfo);
 		}
-		catch (vk::SystemError err)
+		catch (vk::SystemError& err)
 		{
 			if (debug) std::cout << "Command pool creation failed\n" << err.what() << std::endl;
 			return nullptr;
 		}
 	}
 
-	vk::CommandBuffer vkEngine::CreateCommandBuffers(CommandBufferInputChunk inputChunk, bool debug)
+	vk::CommandBuffer vkEngine::CreateCommandBuffers(const CommandBufferInputChunk inputChunk, const bool debug)
 	{
 		vk::CommandBufferAllocateInfo allocInfo{};
 		allocInfo.commandPool = inputChunk.commandPool;
@@ -37,9 +37,11 @@ namespace vkEngine
 				inputChunk.swapchainFrames[i].commandBuffer = inputChunk.device.allocateCommandBuffers(allocInfo)[0];
 				if (debug) std::cout << "Command buffer allocated for frame " << i << std::endl;
 			}
-			catch (vk::SystemError err)
+			catch (vk::SystemError& err)
 			{
-				if (debug) std::cout << "Command buffer allocation failed for frame " << i << "\n" << err.what() << std::endl;
+				if (debug)
+					std::cout << "Command buffer allocation failed for frame " << i << "\n" << err.what() <<
+						std::endl;
 			}
 		}
 
@@ -49,7 +51,7 @@ namespace vkEngine
 			if (debug) std::cout << "Main command buffer allocated" << std::endl;
 			return commandBuffer;
 		}
-		catch (vk::SystemError err)
+		catch (vk::SystemError& err)
 		{
 			if (debug) std::cout << "Command buffer allocation failed" << std::endl;
 			return nullptr;

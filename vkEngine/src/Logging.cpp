@@ -5,23 +5,26 @@
 namespace vkEngine
 {
 	// More Debug Callback Boilerplate
-	VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-		VkDebugUtilsMessageTypeFlagsEXT messageType, 
-		const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
+	VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+	                                             VkDebugUtilsMessageTypeFlagsEXT messageType,
+	                                             const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+	                                             void* pUserData)
 	{
 		std::cerr << "Validation layer: " << pCallbackData->pMessage << "\n";
 		return VK_FALSE;
 	}
 
 	vk::DebugUtilsMessengerEXT CreateDebugMessenger(vk::Instance& instance,
-		vk::DispatchLoaderDynamic& dldi)
+	                                                vk::DispatchLoaderDynamic& dldi)
 	{
-		// The MOTHERLOAD of boilerplate
-		vk::DebugUtilsMessengerCreateInfoEXT createInfo = vk::DebugUtilsMessengerCreateInfoEXT(vk::DebugUtilsMessengerCreateFlagsEXT(),
-			vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
-			vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance,
-			debugCallback, nullptr);
-		// All it needs to do...
+		const vk::DebugUtilsMessengerCreateInfoEXT createInfo = vk::DebugUtilsMessengerCreateInfoEXT(
+			vk::DebugUtilsMessengerCreateFlagsEXT(),
+			vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
+			vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
+			vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
+			vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
+			vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance,
+			DebugCallback, nullptr);
 		return instance.createDebugUtilsMessengerEXT(createInfo, nullptr, dldi);
 	}
 
@@ -45,17 +48,17 @@ namespace vkEngine
 			break;
 		default:
 			std::cout << "Other\n";
+			break;
 		}
 	}
 
-	std::vector<std::string> vkEngine::LogTransformBits(vk::SurfaceTransformFlagsKHR bits)
+	std::vector<std::string> vkEngine::LogTransformBits(const vk::SurfaceTransformFlagsKHR bits)
 	{
 		std::vector<std::string> result;
 		if (bits & vk::SurfaceTransformFlagBitsKHR::eIdentity) result.push_back("Identity");
 		if (bits & vk::SurfaceTransformFlagBitsKHR::eRotate90) result.push_back("Rotate 90");
 		if (bits & vk::SurfaceTransformFlagBitsKHR::eRotate180) result.push_back("Rotate 180");
 		if (bits & vk::SurfaceTransformFlagBitsKHR::eRotate270) result.push_back("Rotate 270");
-
 		if (bits & vk::SurfaceTransformFlagBitsKHR::eHorizontalMirror)
 			result.push_back("Horizontal Mirror");
 		if (bits & vk::SurfaceTransformFlagBitsKHR::eHorizontalMirrorRotate90)
@@ -64,11 +67,10 @@ namespace vkEngine
 			result.push_back("Horizontal Mirror & Rotate 180");
 		if (bits & vk::SurfaceTransformFlagBitsKHR::eHorizontalMirrorRotate270)
 			result.push_back("Horizontal Mirror & Rotate 270");
-
 		if (bits & vk::SurfaceTransformFlagBitsKHR::eInherit) result.push_back("Inherited");
-
 		return result;
 	}
+
 	std::vector<std::string> vkEngine::LogAlphaCompositeBits(vk::CompositeAlphaFlagsKHR bits)
 	{
 		std::vector<std::string> result;
@@ -78,6 +80,7 @@ namespace vkEngine
 		if (bits & vk::CompositeAlphaFlagBitsKHR::eInherit) result.push_back("Inherited");
 		return result;
 	}
+
 	std::vector<std::string> vkEngine::LogImageUsageBits(vk::ImageUsageFlags bits)
 	{
 		std::vector<std::string> result;
@@ -85,7 +88,6 @@ namespace vkEngine
 		if (bits & vk::ImageUsageFlagBits::eTransferDst) result.push_back("Transfer Destination");
 		if (bits & vk::ImageUsageFlagBits::eSampled) result.push_back("Sampled");
 		if (bits & vk::ImageUsageFlagBits::eStorage) result.push_back("Storage");
-
 		if (bits & vk::ImageUsageFlagBits::eColorAttachment)
 			result.push_back("Color Attachment");
 		if (bits & vk::ImageUsageFlagBits::eDepthStencilAttachment)
@@ -94,7 +96,6 @@ namespace vkEngine
 			result.push_back("Transient Attachment");
 		if (bits & vk::ImageUsageFlagBits::eInputAttachment)
 			result.push_back("Input Attachment");
-
 		if (bits & vk::ImageUsageFlagBits::eFragmentDensityMapEXT)
 			result.push_back("Fragment Density Map");
 		if (bits & vk::ImageUsageFlagBits::eFragmentShadingRateAttachmentKHR)

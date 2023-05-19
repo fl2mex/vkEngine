@@ -4,11 +4,12 @@
 
 namespace vkEngine
 {
-	void vkEngine::CreateFrameBuffers(FrameBufferInput input, std::vector<vkEngine::SwapchainFrame>& frames, bool debug)
+	void vkEngine::CreateFrameBuffers(const FrameBufferInput input, std::vector<SwapchainFrame>& frames,
+	                                  const bool debug)
 	{
 		for (int i = 0; i < frames.size(); i++)
 		{
-			std::vector<vk::ImageView> attachments = { frames[i].imageView };
+			std::vector attachments = {frames[i].imageView};
 
 			vk::FramebufferCreateInfo frameBufferInfo = {};
 			frameBufferInfo.flags = vk::FramebufferCreateFlags();
@@ -26,10 +27,10 @@ namespace vkEngine
 			}
 			catch (vk::SystemError& err)
 			{
-				if (debug) std::cout << "Framebuffer creation failed for frame "<<
-					i << "\n" << err.what() << std::endl;
+				if (debug)
+					std::cout << "Framebuffer creation failed for frame " << i << "\n" << err.what() <<
+						std::endl;
 			}
-			
 		}
 	}
 }

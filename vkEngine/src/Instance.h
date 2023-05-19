@@ -4,6 +4,6 @@
 
 namespace vkEngine
 {
-	bool isSupported(std::vector<const char*>& extensions, std::vector<const char*>& layers, bool debug);
+	bool IsSupported(std::vector<const char*>& extensions, std::vector<const char*>& layers, bool debug);
 	vk::Instance CreateInstance(bool debug, const char* applicationName);
 }

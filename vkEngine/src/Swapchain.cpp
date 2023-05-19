@@ -7,7 +7,8 @@
 
 namespace vkEngine
 {
-	SwapchainSupportDetails QuerySwapSupport(vk::PhysicalDevice device, vk::SurfaceKHR surface, bool debug)
+	SwapchainSupportDetails QuerySwapSupport(const vk::PhysicalDevice device, const vk::SurfaceKHR surface,
+	                                         const bool debug)
 	{
 		SwapchainSupportDetails support;
 		support.capabilities = device.getSurfaceCapabilitiesKHR(surface);
@@ -45,7 +46,7 @@ namespace vkEngine
 			std::cout << "\n";
 
 			std::cout << "Surface Formats:\n";
-			for (vk::SurfaceFormatKHR format : support.formats)
+			for (const vk::SurfaceFormatKHR format : support.formats)
 			{
 				std::cout << "\tSupported Pixel Format: " << vk::to_string(format.format) << "\n";
 				std::cout << "\tSupported Color Space: " << vk::to_string(format.colorSpace) << "\n";
@@ -53,7 +54,7 @@ namespace vkEngine
 			std::cout << "\n";
 
 			std::cout << "Surface Present Modes:\n";
-			for (vk::PresentModeKHR mode : support.presentModes)
+			for (const vk::PresentModeKHR mode : support.presentModes)
 				std::cout << "\t" << LogPresentMode(mode) << "\n";
 			std::cout << "\n";
 		}
@@ -62,7 +63,7 @@ namespace vkEngine
 
 	vk::SurfaceFormatKHR vkEngine::ChooseSwapSurfaceFormat(std::vector<vk::SurfaceFormatKHR> formats)
 	{
-		for (vk::SurfaceFormatKHR format : formats)
+		for (const vk::SurfaceFormatKHR format : formats)
 		{
 			if (format.format == vk::Format::eB8G8R8A8Unorm &&
 				format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)
@@ -73,7 +74,7 @@ namespace vkEngine
 
 	vk::PresentModeKHR vkEngine::ChooseSwapPresentMode(std::vector<vk::PresentModeKHR> modes)
 	{
-		for (vk::PresentModeKHR mode : modes)
+		for (const vk::PresentModeKHR mode : modes)
 		{
 			if (mode == vk::PresentModeKHR::eMailbox)
 				return mode;
@@ -83,38 +84,38 @@ namespace vkEngine
 		return vk::PresentModeKHR::eFifo;
 	}
 
-	vk::Extent2D vkEngine::ChooseSwapExtent(uint32_t width, uint32_t height,
-		vk::SurfaceCapabilitiesKHR capabilities)
+	vk::Extent2D vkEngine::ChooseSwapExtent(const uint32_t width, const uint32_t height,
+	                                        const vk::SurfaceCapabilitiesKHR capabilities)
 	{
-		if (capabilities.currentExtent.width != UINT32_MAX)
-			return capabilities.currentExtent;
-		else
+		if (capabilities.currentExtent.width == UINT32_MAX)
 		{
-			vk::Extent2D extent = { width, height };
+			vk::Extent2D extent = {width, height};
 			extent.width = std::min(capabilities.maxImageExtent.width,
-				std::max(capabilities.minImageExtent.width, width));
+			                        std::max(capabilities.minImageExtent.width, width));
 			extent.height = std::min(capabilities.maxImageExtent.height,
-				std::max(capabilities.minImageExtent.height, height));
+			                         std::max(capabilities.minImageExtent.height, height));
 			return extent;
 		}
+		return capabilities.currentExtent;
 	}
 
 	SwapchainBundle CreateSwapchain(vk::Device logicalDevice, vk::PhysicalDevice physicalDevice,
-		vk::SurfaceKHR surface, uint32_t width, uint32_t height, bool debug)
+	                                vk::SurfaceKHR surface, uint32_t width, uint32_t height, bool debug)
 	{
 		SwapchainSupportDetails support = QuerySwapSupport(physicalDevice, surface, debug);
 		vk::SurfaceFormatKHR format = ChooseSwapSurfaceFormat(support.formats);
 		vk::PresentModeKHR mode = ChooseSwapPresentMode(support.presentModes);
 		vk::Extent2D extent = ChooseSwapExtent(width, height, support.capabilities);
 		uint32_t imageCount = std::min(support.capabilities.maxImageCount,
-			support.capabilities.minImageCount + 1);
+		                               support.capabilities.minImageCount + 1);
 
 		vk::SwapchainCreateInfoKHR createInfo = vk::SwapchainCreateInfoKHR(vk::SwapchainCreateFlagsKHR(),
-			surface, imageCount, format.format, format.colorSpace, extent, 1,
-			vk::ImageUsageFlagBits::eColorAttachment);
+		                                                                   surface, imageCount, format.format,
+		                                                                   format.colorSpace, extent, 1,
+		                                                                   vk::ImageUsageFlagBits::eColorAttachment);
 
 		QueueFamilyIndices indices = FindQueueFamilies(physicalDevice, surface, debug);
-		uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };
+		uint32_t queueFamilyIndices[] = {indices.graphicsFamily.value(), indices.presentFamily.value()};
 
 		if (indices.graphicsFamily.value() != indices.presentFamily.value())
 		{
@@ -134,19 +135,26 @@ namespace vkEngine
 		{
 			bundle.swapchain = logicalDevice.createSwapchainKHR(createInfo);
 		}
-		catch (vk::SystemError err)
+		catch (vk::SystemError& err)
 		{
 			throw std::runtime_error("Failed to create swap chain!");
 		}
 
-		std::vector <vk::Image> images = logicalDevice.getSwapchainImagesKHR(bundle.swapchain);
+		std::vector<vk::Image> images = logicalDevice.getSwapchainImagesKHR(bundle.swapchain);
 		bundle.frames.resize(images.size());
 		for (size_t i = 0; i < images.size(); i++)
 		{
 			vk::ImageViewCreateInfo createInfo = vk::ImageViewCreateInfo(vk::ImageViewCreateFlags(),
-				images[i], vk::ImageViewType::e2D, format.format, { vk::ComponentSwizzle::eIdentity,
-				vk::ComponentSwizzle::eIdentity, vk::ComponentSwizzle::eIdentity, vk::ComponentSwizzle::eIdentity},
-				vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1));
+			                                                             images[i], vk::ImageViewType::e2D,
+			                                                             format.format, {
+				                                                             vk::ComponentSwizzle::eIdentity,
+				                                                             vk::ComponentSwizzle::eIdentity,
+				                                                             vk::ComponentSwizzle::eIdentity,
+				                                                             vk::ComponentSwizzle::eIdentity
+			                                                             },
+			                                                             vk::ImageSubresourceRange(
+				                                                             vk::ImageAspectFlagBits::eColor,
+				                                                             0, 1, 0, 1));
 
 			bundle.frames[i].image = images[i];
 			bundle.frames[i].imageView = logicalDevice.createImageView(createInfo);

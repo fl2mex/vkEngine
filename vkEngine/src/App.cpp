@@ -1,14 +1,15 @@
 #include "App.h"
 
+#include <iostream>
 #include <sstream>
 
-App::App(int width, int height, bool debug)
+App::App(const int width, const int height, const bool debug)
 {
 	CreateWindow(width, height, debug);
 	m_GraphicsEngine = new Engine(width, height, m_Window, debug);
 }
 
-void App::CreateWindow(int width, int height, bool debugMode)
+void App::CreateWindow(const int width, const int height, const bool debugMode)
 {
 	if (!glfwInit())
 	{
@@ -45,19 +46,18 @@ void App::CalculateFrameRate()
 
 	if (deltaTime >= 1)
 	{
-		int fps = std::max(1, int(m_NumFrames / deltaTime));
-		std::stringstream title; title << "Vulkan App - Running at " << fps << "FPS";
+		m_FPS = std::max(1, static_cast<int>(m_NumFrames / deltaTime));
+		std::stringstream title;
+		title << "Vulkan App - Running at " << m_FPS << "FPS";
 		glfwSetWindowTitle(m_Window, title.str().c_str());
 		m_LastTime = m_CurrentTime;
 		m_NumFrames = -1;
-		m_FrameTime = 1000.0f / fps;
+		m_FrameTime = 1000.0f / static_cast<float>(m_FPS);
 	}
 	m_NumFrames++;
 }
 
 App::~App()
 {
-	glfwDestroyWindow(m_Window);
-	glfwTerminate();
 	delete m_GraphicsEngine;
 }

@@ -11,6 +11,7 @@ namespace vkEngine
 		vk::Extent2D swapchainExtent;
 		vk::Format swapchainImageFormat;
 	};
+
 	struct GraphicsPipelineOut
 	{
 		vk::PipelineLayout layout;

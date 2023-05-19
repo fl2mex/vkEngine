@@ -1,8 +1,6 @@
 #pragma once
 #include "Engine.h"
 
-#include <iostream>
-
 class App
 {
 public:
@@ -14,6 +12,7 @@ private:
 	Engine* m_GraphicsEngine;
 	GLFWwindow* m_Window;
 
+	int m_FPS;
 	double m_LastTime, m_CurrentTime;
 	int m_NumFrames;
 	float m_FrameTime;

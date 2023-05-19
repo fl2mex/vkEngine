@@ -11,7 +11,7 @@ public:
 	Engine(int width, int height, GLFWwindow* window, bool debug); // Constructor, no need to call a function
 	~Engine(); // Destructor runs automatically when main loop ends
 
-	void Render();
+	void Render() const;
 
 private:
 	bool debugMode;
@@ -24,7 +24,7 @@ private:
 	vk::DispatchLoaderDynamic m_DLDI{};
 	vk::SurfaceKHR m_Surface{};
 
-	vk::PhysicalDevice m_PhysicalDevice{nullptr};
+	vk::PhysicalDevice m_PhysicalDevice{};
 	vk::Device m_Device{nullptr};
 	vk::Queue m_GraphicsQueue{nullptr}, m_PresentQueue{nullptr};
 

@@ -4,7 +4,7 @@
 
 namespace vkEngine
 {
-	GraphicsPipelineOut vkEngine::CreateGraphicsPipeline(GraphicsPipelineIn specs, bool debug)
+	GraphicsPipelineOut vkEngine::CreateGraphicsPipeline(GraphicsPipelineIn specs, const bool debug)
 	{
 		vk::GraphicsPipelineCreateInfo createInfo{};
 		createInfo.flags = vk::PipelineCreateFlags();
@@ -91,7 +91,8 @@ namespace vkEngine
 
 		// Color blending
 		vk::PipelineColorBlendAttachmentState colorBlendAttachment{};
-		colorBlendAttachment.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
+		colorBlendAttachment.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG |
+			vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
 		colorBlendAttachment.blendEnable = VK_FALSE;
 
 		vk::PipelineColorBlendStateCreateInfo colorBlending{};
@@ -121,7 +122,7 @@ namespace vkEngine
 		{
 			graphicsPipeline = specs.device.createGraphicsPipeline(nullptr, createInfo).value;
 		}
-		catch (vk::SystemError err)
+		catch (vk::SystemError& err)
 		{
 			if (debug) std::cout << "Failed to create graphics pipeline\n" << err.what() << std::endl;
 		}
@@ -137,7 +138,7 @@ namespace vkEngine
 		return out;
 	}
 
-	vk::PipelineLayout vkEngine::CreatePipelineLayout(vk::Device device, bool debug)
+	vk::PipelineLayout vkEngine::CreatePipelineLayout(const vk::Device device, const bool debug)
 	{
 		vk::PipelineLayoutCreateInfo createInfo{};
 		createInfo.flags = vk::PipelineLayoutCreateFlags();
@@ -147,13 +148,14 @@ namespace vkEngine
 		{
 			return device.createPipelineLayout(createInfo);
 		}
-		catch (vk::SystemError err)
+		catch (vk::SystemError& err)
 		{
 			if (debug) std::cout << "Failed to create pipeline layout\n" << err.what() << std::endl;
 		}
 	}
 
-	vk::RenderPass vkEngine::CreateRenderPass(vk::Device device, vk::Format swapchainImageFormat, bool debug)
+	vk::RenderPass vkEngine::CreateRenderPass(const vk::Device device, const vk::Format swapchainImageFormat,
+	                                          const bool debug)
 	{
 		vk::AttachmentDescription colorAttachment{};
 		colorAttachment.format = swapchainImageFormat;
@@ -184,7 +186,7 @@ namespace vkEngine
 		{
 			return device.createRenderPass(createInfo);
 		}
-		catch (vk::SystemError err)
+		catch (vk::SystemError& err)
 		{
 			if (debug) std::cout << "Failed to create render pass\n" << err.what() << std::endl;
 		}

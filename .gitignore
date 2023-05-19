@@ -32,3 +32,4 @@
 /vkEngine/vendor/GLFW/include/GLFW/glfw3.h
 /vkEngine/vendor/GLFW/include/GLFW/glfw3native.h
 /vkEngine/x64/Debug
+/vkEngine/x64/Release

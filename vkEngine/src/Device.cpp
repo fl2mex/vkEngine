@@ -7,8 +7,8 @@
 
 namespace vkEngine
 {
-	bool checkDeviceExtensionSupport(const vk::PhysicalDevice& device,
-		const std::vector<const char*>& requestedExtensions, const bool& debug)
+	bool CheckDeviceExtensionSupport(const vk::PhysicalDevice& device,
+	                                 const std::vector<const char*>& requestedExtensions, const bool& debug)
 	{
 		std::set<std::string> requiredExtensions(requestedExtensions.begin(), requestedExtensions.end());
 		if (debug) std::cout << "Device can support extensions:\n";
@@ -22,9 +22,9 @@ namespace vkEngine
 		return requiredExtensions.empty();
 	}
 
-	bool isSuitable(const vk::PhysicalDevice& device, const bool debug) {
-
-		const std::vector<const char*> requestedExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+	bool IsSuitable(const vk::PhysicalDevice& device, const bool debug)
+	{
+		const std::vector requestedExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
 		if (debug)
 		{
@@ -34,40 +34,42 @@ namespace vkEngine
 			std::cout << "\n";
 		}
 
-		if (bool extensionsSupported = checkDeviceExtensionSupport(device, requestedExtensions, debug))
-			if (debug) std::cout << "Device can support the requested extensions\n\n";
-			else
+		if (bool extensionsSupported = CheckDeviceExtensionSupport(device, requestedExtensions, debug))
+			if (!debug)
 			{
 				if (debug) std::cout << "Device can't support the requested extensions\n\n";
 				return false;
 			}
+		std::cout << "Device can support the requested extensions\n\n";
 		return true;
 	}
 
 	vk::PhysicalDevice CreateDevice(const vk::Instance& instance, const bool debug)
 	{
-		std::vector<vk::PhysicalDevice> availableDevices = instance.enumeratePhysicalDevices();
-		if (debug) std::cout << "Choosing Physical Device\nThere are " <<
-			availableDevices.size() << " physical devices available on this system\n";
+		const std::vector<vk::PhysicalDevice> availableDevices = instance.enumeratePhysicalDevices();
+		if (debug)
+			std::cout << "Choosing Physical Device\nThere are " <<
+				availableDevices.size() << " physical devices available on this system\n";
 
 		for (vk::PhysicalDevice device : availableDevices)
 		{
 			if (debug) LogDeviceProperties(device);
-			if (isSuitable(device, debug)) return device;
+			if (IsSuitable(device, debug)) return device;
 		}
 		return nullptr;
 	}
 
-	QueueFamilyIndices vkEngine::FindQueueFamilies(vk::PhysicalDevice device,
-		vk::SurfaceKHR surface, bool debug)
+	QueueFamilyIndices vkEngine::FindQueueFamilies(const vk::PhysicalDevice device,
+	                                               const vk::SurfaceKHR surface, const bool debug)
 	{
 		QueueFamilyIndices indices;
 		// TODO: Figure out why this is not working.
 		// device.getQueueFamilyProperties() does not run when debug is turned off. Must figure out.
-		std::vector<vk::QueueFamilyProperties> queueFamilies = device.getQueueFamilyProperties();
+		const std::vector<vk::QueueFamilyProperties> queueFamilies = device.getQueueFamilyProperties();
 
-		if (debug) std::cout << "There are " << queueFamilies.size() <<
-			" queue families available on the system.\n";
+		if (debug)
+			std::cout << "There are " << queueFamilies.size() <<
+				" queue families available on the system.\n";
 
 		int i = 0;
 		for (vk::QueueFamilyProperties queueFamily : queueFamilies)
@@ -84,7 +86,7 @@ namespace vkEngine
 				if (debug) std::cout << "Queue Family " << i << " is suitable for presenting\n";
 			}
 
-			if (indices.isComplete()) break;
+			if (indices.IsComplete()) break;
 			i++;
 		}
 		std::cout << "\n";
@@ -92,24 +94,22 @@ namespace vkEngine
 	}
 
 	vk::Device vkEngine::CreateLogicalDevice(vk::PhysicalDevice physicalDevice, vk::SurfaceKHR surface,
-		bool debug)
+	                                         const bool debug)
 	{
-		QueueFamilyIndices indices = FindQueueFamilies(physicalDevice, surface, debug);
+		/*QueueFamilyIndices indices = FindQueueFamilies(physicalDevice, surface, debug);
 		std::vector<uint32_t> uniqueIndices;
 		uniqueIndices.push_back(indices.graphicsFamily.value());
-		if (indices.presentFamily.value() != indices.graphicsFamily.value())
+		if (indices.graphicsFamily.value() != indices.presentFamily.value())
 			uniqueIndices.push_back(indices.presentFamily.value());
 
-		float queuePriority = 1.0f;
 		std::vector<vk::DeviceQueueCreateInfo> queueCreateInfo;
+		float queuePriority = 1.0f;
 		for (uint32_t queueFamilyIndex : uniqueIndices)
-		{
 			queueCreateInfo.push_back(vk::DeviceQueueCreateInfo(vk::DeviceQueueCreateFlags(),
 				queueFamilyIndex, 1, &queuePriority));
-		}
 
-		std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 		vk::PhysicalDeviceFeatures deviceFeatures = vk::PhysicalDeviceFeatures();
+		std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 		std::vector<const char*> enabledLayers;
 		if (debug) enabledLayers.push_back("VK_LAYER_KHRONOS_validation");
 
@@ -124,21 +124,69 @@ namespace vkEngine
 			if (debug) std::cout << "GPU successfully created\n";
 			return device;
 		}
-		catch (vk::SystemError err)
+		catch (vk::SystemError& err)
+		{
+			if (debug) std::cout << "GPU creation failed\n" << err.what() << "\n";
+			return nullptr;
+		}
+		return nullptr;*/
+
+		QueueFamilyIndices indices = FindQueueFamilies(physicalDevice, surface, debug);
+		std::vector<uint32_t> uniqueIndices;
+		uniqueIndices.push_back(indices.graphicsFamily.value());
+		if (indices.graphicsFamily.value() != indices.presentFamily.value())
+		{
+			uniqueIndices.push_back(indices.presentFamily.value());
+		}
+
+		std::vector<vk::DeviceQueueCreateInfo> queueCreateInfo;
+		float queuePriority = 1.0f;
+		for (uint32_t queueFamilyIndex : uniqueIndices)
+		{
+			queueCreateInfo.push_back(vk::DeviceQueueCreateInfo(vk::DeviceQueueCreateFlags(),
+			                                                    queueFamilyIndex, 1, &queuePriority));
+		}
+
+		vk::PhysicalDeviceFeatures deviceFeatures = vk::PhysicalDeviceFeatures();
+
+		std::vector deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+
+		std::vector<const char*> enabledLayers;
+		if (debug)
+		{
+			enabledLayers.push_back("VK_LAYER_KHRONOS_validation");
+		}
+		vk::DeviceCreateInfo deviceInfo = vk::DeviceCreateInfo(
+			vk::DeviceCreateFlags(),
+			queueCreateInfo.size(), queueCreateInfo.data(),
+			enabledLayers.size(), enabledLayers.data(),
+			deviceExtensions.size(), deviceExtensions.data(),
+			&deviceFeatures);
+
+		try
+		{
+			vk::Device device = physicalDevice.createDevice(deviceInfo);
+			if (debug)
+			{
+				std::cout << "GPU has been successfully abstracted!\n";
+			}
+			return device;
+		}
+		catch (vk::SystemError& err)
 		{
 			if (debug)
 			{
-				std::cout << "GPU creation failed\n" << err.what() << "\n";
+				std::cout << "Device creation failed!\n";
+				return nullptr;
 			}
-			return nullptr;
 		}
 		return nullptr;
 	}
 
-	 std::array<vk::Queue, 2> vkEngine::GetQueue(vk::PhysicalDevice physicalDevice, vk::Device device,
-		vk::SurfaceKHR surface, bool debug)
-	 {
-		QueueFamilyIndices indices = FindQueueFamilies(physicalDevice, surface, debug);
+	std::array<vk::Queue, 2> vkEngine::GetQueue(vk::PhysicalDevice physicalDevice, vk::Device device,
+	                                            vk::SurfaceKHR surface, bool debug)
+	{
+		const QueueFamilyIndices indices = FindQueueFamilies(physicalDevice, surface, debug);
 
 		return
 		{
